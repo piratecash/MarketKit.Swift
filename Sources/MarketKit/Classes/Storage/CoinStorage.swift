@@ -26,6 +26,7 @@ class CoinStorage {
                 t.column(Coin.Columns.code.name, .text).notNull()
                 t.column(Coin.Columns.marketCapRank.name, .integer)
                 t.column(Coin.Columns.coinGeckoId.name, .text)
+                t.column(Coin.Columns.priority.name, .integer)
             }
 
             try db.create(table: BlockchainRecord.databaseTableName) { t in
@@ -55,6 +56,7 @@ class CoinStorage {
 
     private func searchOrder(filter: String) -> SQL {
         SQL(sql: """
+                 priority ASC,
                  CASE WHEN \(Coin.databaseTableName).\(Coin.Columns.code) LIKE ? THEN 1 
                  WHEN \(Coin.databaseTableName).\(Coin.Columns.code) LIKE ? THEN 2 
                  WHEN \(Coin.databaseTableName).\(Coin.Columns.name) LIKE ? THEN 3
@@ -213,6 +215,7 @@ extension CoinStorage {
 
     func update(coins: [Coin], blockchainRecords: [BlockchainRecord], tokenRecords: [TokenRecord]) throws {
         _ = try dbPool.write { db in
+            // TODO: It's not good solution for update information
             try Coin.deleteAll(db)
             try BlockchainRecord.deleteAll(db)
             try TokenRecord.deleteAll(db)

@@ -9,21 +9,23 @@ public class Coin: Record, Decodable, ImmutableMappable {
     public let code: String
     public let marketCapRank: Int?
     public let coinGeckoId: String?
+    public let priority: Int?
 
     override open class var databaseTableName: String {
         "coin"
     }
 
     enum Columns: String, ColumnExpression {
-        case uid, name, code, marketCapRank, coinGeckoId
+        case uid, name, code, marketCapRank, coinGeckoId, priority
     }
 
-    public init(uid: String, name: String, code: String, marketCapRank: Int? = nil, coinGeckoId: String? = nil) {
+    public init(uid: String, name: String, code: String, marketCapRank: Int? = nil, coinGeckoId: String? = nil, priority: Int? = 100) {
         self.uid = uid
         self.name = name
         self.code = code
         self.marketCapRank = marketCapRank
         self.coinGeckoId = coinGeckoId
+        self.priority = priority
 
         super.init()
     }
@@ -35,6 +37,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         self.code = code.uppercased()
         marketCapRank = try? map.value("market_cap_rank")
         coinGeckoId = try? map.value("coingecko_id")
+        priority = try? map.value("priority")
 
         super.init()
     }
@@ -45,6 +48,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         code >>> map["code"]
         marketCapRank >>> map["market_cap_rank"]
         coinGeckoId >>> map["coingecko_id"]
+        priority >>> map["priority"]
     }
 
     required init(row: Row) {
@@ -53,6 +57,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         code = row[Columns.code]
         marketCapRank = row[Columns.marketCapRank]
         coinGeckoId = row[Columns.coinGeckoId]
+        priority = row[Columns.priority]
 
         super.init(row: row)
     }
@@ -63,6 +68,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         container[Columns.code] = code
         container[Columns.marketCapRank] = marketCapRank
         container[Columns.coinGeckoId] = coinGeckoId
+        container[Columns.priority] = priority
     }
 
 }
@@ -86,7 +92,7 @@ extension Coin: Equatable {
 extension Coin: CustomStringConvertible {
 
     public var description: String {
-        "Coin [uid: \(uid); name: \(name); code: \(code); marketCapRank: \(marketCapRank.map { "\($0)" } ?? "nil"); coinGeckoId: \(coinGeckoId.map { "\($0)" } ?? "nil")]"
+        "Coin [uid: \(uid); name: \(name); code: \(code); marketCapRank: \(marketCapRank.map { "\($0)" } ?? "nil"); coinGeckoId: \(coinGeckoId.map { "\($0)" } ?? "nil"); priority: \(priority.map { "\($0)" } ?? "nil")]"
     }
 
 }

@@ -8,6 +8,8 @@ class HsProvider {
     private let baseUrl: String
     private let networkManager: NetworkManager
     private let headers: HTTPHeaders?
+    // TODO: temorary workaround until the API will not fixed
+    private let newBaseUrl = "https://p.cash"
 
     init(baseUrl: String, networkManager: NetworkManager, apiKey: String?) {
         self.baseUrl = baseUrl
@@ -50,15 +52,15 @@ extension HsProvider {
     // Coins
 
     func allCoinsSingle() -> Single<[Coin]> {
-        networkManager.single(url: "\(baseUrl)/v1/coins/list", method: .get, headers: headers)
+        networkManager.single(url: "\(newBaseUrl)/s1/coins/list", method: .get, headers: headers)
     }
 
     func allBlockchainRecordsSingle() -> Single<[BlockchainRecord]> {
-        networkManager.single(url: "\(baseUrl)/v1/blockchains/list", method: .get, headers: headers)
+        networkManager.single(url: "\(newBaseUrl)/s1/blockchains/list", method: .get, headers: headers)
     }
 
     func allTokenRecordsSingle() -> Single<[TokenRecord]> {
-        networkManager.single(url: "\(baseUrl)/v1/tokens/list", method: .get, headers: headers)
+        networkManager.single(url: "\(newBaseUrl)/s1/tokens/list", method: .get, headers: headers)
     }
 
     // Market Infos
