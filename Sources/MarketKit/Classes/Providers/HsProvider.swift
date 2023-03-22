@@ -443,9 +443,7 @@ extension HsProvider {
             ChartPoint(
                     timestamp: TimeInterval(timestamp),
                     value: price,
-                    extra: totalVolume.flatMap { volume in
-                        [ChartPoint.volume: volume]
-                    } ?? [:]
+                    volume: totalVolume
             )
         }
 
