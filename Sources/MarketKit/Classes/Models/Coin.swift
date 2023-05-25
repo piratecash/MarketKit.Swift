@@ -51,7 +51,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         priority >>> map["priority"]
     }
 
-    required init(row: Row) {
+    required init(row: Row) throws {
         uid = row[Columns.uid]
         name = row[Columns.name]
         code = row[Columns.code]
@@ -59,10 +59,10 @@ public class Coin: Record, Decodable, ImmutableMappable {
         coinGeckoId = row[Columns.coinGeckoId]
         priority = row[Columns.priority]
 
-        super.init(row: row)
+        try super.init(row: row)
     }
 
-    override open func encode(to container: inout PersistenceContainer) {
+    override open func encode(to container: inout PersistenceContainer) throws {
         container[Columns.uid] = uid
         container[Columns.name] = name
         container[Columns.code] = code
