@@ -10,11 +10,23 @@ class HsProvider {
     // TODO: temorary workaround until the API will not fixed
     private let newBaseUrl = "https://p.cash"
 
+    var proAuthToken: String?
+
     init(baseUrl: String, networkManager: NetworkManager, apiKey: String?) {
         self.baseUrl = baseUrl
         self.networkManager = networkManager
 
         headers = apiKey.flatMap { HTTPHeaders([HTTPHeader(name: "apikey", value: $0)]) }
+    }
+
+    private var proHeaders: HTTPHeaders? {
+        guard let proAuthToken else {
+            return headers
+        }
+
+        var proHeaders = headers
+        proHeaders?.add(.authorization(proAuthToken))
+        return proHeaders
     }
 
 }
@@ -225,7 +237,7 @@ extension HsProvider {
             "blockchain_uid": blockchainUid
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)/holders", method: .get, parameters: parameters, headers: headers)
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)/holders", method: .get, parameters: parameters, headers: proHeaders)
     }
 
     // Funds
@@ -299,36 +311,24 @@ extension HsProvider {
 
     //Pro Charts
 
-    private func proHeaders(sessionKey: String?) -> HTTPHeaders? {
-        guard let sessionKey = sessionKey else {
-            return headers
-        }
-        var proHeaders = HTTPHeaders()
-
-        headers?.forEach { proHeaders.add($0) }
-        proHeaders.add(.authorization(bearerToken: sessionKey))
-
-        return proHeaders
-    }
-
-    func proData<T: ImmutableMappable>(path: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [T] {
+    private func proData<T: ImmutableMappable>(path: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [T] {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased(),
             "interval": timePeriod.rawValue
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/\(path)", method: .get, parameters: parameters, headers: headers)
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(path)", method: .get, parameters: parameters, headers: proHeaders)
     }
 
-    func proData<T: ImmutableMappable>(path: String, timePeriod: HsTimePeriod) async throws -> [T] {
+    private func proData<T: ImmutableMappable>(path: String, timePeriod: HsTimePeriod) async throws -> [T] {
         let parameters: Parameters = [
             "interval": timePeriod.rawValue
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/\(path)", method: .get, parameters: parameters, headers: headers)
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(path)", method: .get, parameters: parameters, headers: proHeaders)
     }
 
-    func rankData<T: ImmutableMappable>(type: String, currencyCode: String? = nil) async throws -> [T] {
+    private func rankData<T: ImmutableMappable>(type: String, currencyCode: String? = nil) async throws -> [T] {
         var parameters: Parameters = [
             "type": type
         ]
@@ -337,18 +337,15 @@ extension HsProvider {
             parameters["currency"] = currencyCode.lowercased()
         }
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/ranks", method: .get, parameters: parameters, headers: headers)
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/ranks", method: .get, parameters: parameters, headers: proHeaders)
     }
 
-    func analytics(coinUid: String, currencyCode: String, authToken: String) async throws -> Analytics {
+    func analytics(coinUid: String, currencyCode: String) async throws -> Analytics {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased()
         ]
 
-        var headers = headers
-        headers?.add(.authorization(authToken))
-
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)", method: .get, parameters: parameters, headers: headers)
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)", method: .get, parameters: parameters, headers: proHeaders)
     }
 
     func analyticsPreview(coinUid: String, addresses: [String]) async throws -> AnalyticsPreview {
@@ -362,19 +359,19 @@ extension HsProvider {
     }
 
     func dexVolumes(coinUid: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [VolumePoint] {
-        try await proData(path: "analytics/\(coinUid)/dex-volumes", currencyCode: currencyCode, timePeriod: timePeriod)
+        try await proData(path: "\(coinUid)/dex-volumes", currencyCode: currencyCode, timePeriod: timePeriod)
     }
 
     func dexLiquidity(coinUid: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [VolumePoint] {
-        try await proData(path: "analytics/\(coinUid)/dex-liquidity", currencyCode: currencyCode, timePeriod: timePeriod)
+        try await proData(path: "\(coinUid)/dex-liquidity", currencyCode: currencyCode, timePeriod: timePeriod)
     }
 
     func activeAddresses(coinUid: String, timePeriod: HsTimePeriod) async throws -> [CountPoint] {
-        try await proData(path: "analytics/\(coinUid)/addresses", timePeriod: timePeriod)
+        try await proData(path: "\(coinUid)/addresses", timePeriod: timePeriod)
     }
 
     func transactions(coinUid: String, timePeriod: HsTimePeriod) async throws -> [CountVolumePoint] {
-        try await proData(path: "analytics/\(coinUid)/transactions", timePeriod: timePeriod)
+        try await proData(path: "\(coinUid)/transactions", timePeriod: timePeriod)
     }
 
     func cexVolumeRanks(currencyCode: String) async throws -> [RankMultiValue] {
