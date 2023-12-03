@@ -153,7 +153,7 @@ extension HsProvider {
         ]
 
         let response: [MarketInfoTvlRaw] = try await networkManager.fetch(url: "\(baseUrl)/v1/defi-protocols/\(coinUid)/tvls", method: .get, parameters: parameters, headers: headers())
-        return response.compactMap { $0.marketInfoTvl }
+        return response.compactMap(\.marketInfoTvl)
     }
 
     func marketInfoGlobalTvl(platform: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [ChartPoint] {
@@ -167,7 +167,7 @@ extension HsProvider {
         }
 
         let response: [MarketInfoTvlRaw] = try await networkManager.fetch(url: "\(baseUrl)/v1/global-markets/tvls", method: .get, parameters: parameters, headers: headers())
-        return response.compactMap { $0.marketInfoTvl }
+        return response.compactMap(\.marketInfoTvl)
     }
 
     func defiCoins(currencyCode: String, apiTag: String) async throws -> [DefiCoinRaw] {
@@ -182,7 +182,7 @@ extension HsProvider {
 
     func coinCategories(currencyCode: String? = nil) async throws -> [CoinCategory] {
         var parameters: Parameters = [:]
-        if let currencyCode = currencyCode {
+        if let currencyCode {
             parameters["currency"] = currencyCode.lowercased()
         }
 
@@ -191,7 +191,7 @@ extension HsProvider {
 
     func coinCategoryMarketCapChart(category: String, currencyCode: String?, timePeriod: HsTimePeriod) async throws -> [CategoryMarketPoint] {
         var parameters: Parameters = [:]
-        if let currencyCode = currencyCode {
+        if let currencyCode {
             parameters["currency"] = currencyCode.lowercased()
         }
         parameters["interval"] = timePeriod.rawValue
@@ -313,7 +313,7 @@ extension HsProvider {
 
     func topPlatformMarketCapChart(platform: String, currencyCode: String?, timePeriod: HsTimePeriod) async throws -> [CategoryMarketPoint] {
         var parameters: Parameters = [:]
-        if let currencyCode = currencyCode {
+        if let currencyCode {
             parameters["currency"] = currencyCode.lowercased()
         }
         parameters["interval"] = timePeriod.rawValue

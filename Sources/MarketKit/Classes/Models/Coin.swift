@@ -30,7 +30,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         super.init()
     }
 
-    required public init(map: Map) throws {
+    public required init(map: Map) throws {
         uid = try map.value("uid")
         name = try map.value("name")
         let code: String = try map.value("code")
@@ -70,29 +70,22 @@ public class Coin: Record, Decodable, ImmutableMappable {
         container[Columns.coinGeckoId] = coinGeckoId
         container[Columns.priority] = priority
     }
-
 }
 
 extension Coin: Hashable {
-
     public func hash(into hasher: inout Hasher) {
         hasher.combine(uid)
     }
-
 }
 
 extension Coin: Equatable {
-
-    public static func ==(lhs: Coin, rhs: Coin) -> Bool {
+    public static func == (lhs: Coin, rhs: Coin) -> Bool {
         lhs.uid == rhs.uid
     }
-
 }
 
 extension Coin: CustomStringConvertible {
-
     public var description: String {
         "Coin [uid: \(uid); name: \(name); code: \(code); marketCapRank: \(marketCapRank.map { "\($0)" } ?? "nil"); coinGeckoId: \(coinGeckoId.map { "\($0)" } ?? "nil"); priority: \(priority.map { "\($0)" } ?? "nil")]"
     }
-
 }
