@@ -8,46 +8,34 @@ class HsProvider {
     private let networkManager: NetworkManager
     // TODO: temorary workaround until the API will not fixed
     private let newBaseUrl = "https://p.cash"
-    private let appVersion: String
-    private let appId: String?
     private let apiKey: String?
 
     var proAuthToken: String?
 
-    init(baseUrl: String, networkManager: NetworkManager, appVersion: String, appId: String?, apiKey: String?) {
+    init(baseUrl: String, networkManager: NetworkManager, apiKey: String?) {
         self.baseUrl = baseUrl
         self.networkManager = networkManager
-        self.appVersion = appVersion
-        self.appId = appId
         self.apiKey = apiKey
     }
 
-    private func headers(apiTag: String? = nil, auth: String? = nil) -> HTTPHeaders {
+    var headers: HTTPHeaders {
         var headers = HTTPHeaders()
-        headers.add(name: "app_platform", value: "ios")
-        headers.add(name: "app_version", value: appVersion)
-
-        if let apiTag {
-            headers.add(name: "app_tag", value: apiTag)
-        }
-
-        if let appId {
-            headers.add(name: "app_id", value: appId)
-        }
 
         if let apiKey {
             headers.add(name: "apikey", value: apiKey)
         }
 
-        if let auth {
-            headers.add(.authorization(auth))
-        }
-
         return headers
     }
 
-    private func proHeaders(apiTag: String? = nil) -> HTTPHeaders {
-        headers(apiTag: apiTag, auth: proAuthToken)
+    var proHeaders: HTTPHeaders {
+        var headers = headers
+
+        if let proAuthToken {
+            headers.add(.authorization(proAuthToken))
+        }
+
+        return headers
     }
 }
 
@@ -58,7 +46,7 @@ extension HsProvider {
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/markets/overview", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/markets/overview", method: .get, parameters: parameters, headers: headers)
     }
 
     func topMoversRaw(currencyCode: String) async throws -> TopMoversRaw {
@@ -66,7 +54,7 @@ extension HsProvider {
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/top-movers", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/top-movers", method: .get, parameters: parameters, headers: headers)
     }
 }
 
@@ -74,26 +62,26 @@ extension HsProvider {
     // Status
 
     func status() async throws -> HsStatus {
-        try await networkManager.fetch(url: "\(baseUrl)/v1/status/updates", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(baseUrl)/v1/status/updates", method: .get, headers: headers)
     }
 
     // Coins
 
     func allCoins() async throws -> [Coin] {
-        try await networkManager.fetch(url: "\(newBaseUrl)/s1/coins/list", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(newBaseUrl)/s1/coins/list", method: .get, headers: headers)
     }
 
     func allBlockchainRecords() async throws -> [BlockchainRecord] {
-        try await networkManager.fetch(url: "\(newBaseUrl)/s1/blockchains/list", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(newBaseUrl)/s1/blockchains/list", method: .get, headers: headers)
     }
 
     func allTokenRecords() async throws -> [TokenRecord] {
-        try await networkManager.fetch(url: "\(newBaseUrl)/s1/tokens/list", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(newBaseUrl)/s1/tokens/list", method: .get, headers: headers)
     }
 
     // Market Infos
 
-    func marketInfos(top: Int, currencyCode: String, defi: Bool, apiTag: String) async throws -> [MarketInfoRaw] {
+    func marketInfos(top: Int, currencyCode: String, defi: Bool) async throws -> [MarketInfoRaw] {
         var parameters: Parameters = [
             "limit": top,
             "fields": "price,price_change_24h,market_cap,market_cap_rank,total_volume",
@@ -105,7 +93,7 @@ extension HsProvider {
             parameters["defi"] = "true"
         }
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers)
     }
 
     func advancedMarketInfos(top: Int, currencyCode: String) async throws -> [MarketInfoRaw] {
@@ -115,34 +103,34 @@ extension HsProvider {
             "order_by_rank": "true",
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/filter", method: .get, parameters: parameters, headers: headers(apiTag: "advanced_search"))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/filter", method: .get, parameters: parameters, headers: headers)
     }
 
-    func marketInfos(coinUids: [String], currencyCode: String, apiTag: String) async throws -> [MarketInfoRaw] {
+    func marketInfos(coinUids: [String], currencyCode: String) async throws -> [MarketInfoRaw] {
         let parameters: Parameters = [
             "uids": coinUids.joined(separator: ","),
             "fields": "price,price_change_24h,price_change_7d,price_change_30d,market_cap,market_cap_rank,total_volume",
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers)
     }
 
-    func marketInfos(categoryUid: String, currencyCode: String, apiTag: String) async throws -> [MarketInfoRaw] {
+    func marketInfos(categoryUid: String, currencyCode: String) async throws -> [MarketInfoRaw] {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/categories/\(categoryUid)/coins", method: .get, parameters: parameters, headers: headers(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/categories/\(categoryUid)/coins", method: .get, parameters: parameters, headers: headers)
     }
 
-    func marketInfoOverview(coinUid: String, currencyCode: String, languageCode: String, apiTag: String) async throws -> MarketInfoOverviewResponse {
+    func marketInfoOverview(coinUid: String, currencyCode: String, languageCode: String) async throws -> MarketInfoOverviewResponse {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased(),
             "language": languageCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)", method: .get, parameters: parameters, headers: headers(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)", method: .get, parameters: parameters, headers: headers)
     }
 
     func marketInfoTvl(coinUid: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [ChartPoint] {
@@ -151,7 +139,7 @@ extension HsProvider {
             "interval": timePeriod.rawValue,
         ]
 
-        let response: [MarketInfoTvlRaw] = try await networkManager.fetch(url: "\(baseUrl)/v1/defi-protocols/\(coinUid)/tvls", method: .get, parameters: parameters, headers: headers())
+        let response: [MarketInfoTvlRaw] = try await networkManager.fetch(url: "\(baseUrl)/v1/defi-protocols/\(coinUid)/tvls", method: .get, parameters: parameters, headers: headers)
         return response.compactMap(\.marketInfoTvl)
     }
 
@@ -165,16 +153,16 @@ extension HsProvider {
             parameters["chain"] = platform
         }
 
-        let response: [MarketInfoTvlRaw] = try await networkManager.fetch(url: "\(baseUrl)/v1/global-markets/tvls", method: .get, parameters: parameters, headers: headers())
+        let response: [MarketInfoTvlRaw] = try await networkManager.fetch(url: "\(baseUrl)/v1/global-markets/tvls", method: .get, parameters: parameters, headers: headers)
         return response.compactMap(\.marketInfoTvl)
     }
 
-    func defiCoins(currencyCode: String, apiTag: String) async throws -> [DefiCoinRaw] {
+    func defiCoins(currencyCode: String) async throws -> [DefiCoinRaw] {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/defi-protocols", method: .get, parameters: parameters, headers: headers(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/defi-protocols", method: .get, parameters: parameters, headers: headers)
     }
 
     // Coin Categories
@@ -185,7 +173,7 @@ extension HsProvider {
             parameters["currency"] = currencyCode.lowercased()
         }
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/categories", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/categories", method: .get, parameters: parameters, headers: headers)
     }
 
     func coinCategoryMarketCapChart(category: String, currencyCode: String?, timePeriod: HsTimePeriod) async throws -> [CategoryMarketPoint] {
@@ -195,7 +183,7 @@ extension HsProvider {
         }
         parameters["interval"] = timePeriod.rawValue
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/categories/\(category)/market_cap", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/categories/\(category)/market_cap", method: .get, parameters: parameters, headers: headers)
     }
 
     // Coin Prices
@@ -211,7 +199,7 @@ extension HsProvider {
             parameters["enabled_uids"] = walletCoinUids.joined(separator: ",")
         }
 
-        let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers(apiTag: "coin_prices"))
+        let responses: [CoinPriceResponse] = try await networkManager.fetch(url: "\(baseUrl)/v1/coins", method: .get, parameters: parameters, headers: headers)
         return responses.map { $0.coinPrice(currencyCode: currencyCode) }
     }
 
@@ -221,15 +209,15 @@ extension HsProvider {
             "timestamp": Int(timestamp),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/price_history", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/price_history", method: .get, parameters: parameters, headers: headers)
     }
 
     func coinPriceChartStart(coinUid: String) async throws -> ChartStart {
-        try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/price_chart_start", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/price_chart_start", method: .get, headers: headers)
     }
 
     func topPlatformMarketCapStart(platform: String) async throws -> ChartStart {
-        try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms/\(platform)/market_chart_start", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms/\(platform)/market_chart_start", method: .get, headers: headers)
     }
 
     func coinPriceChart(coinUid: String, currencyCode: String, interval: HsPointTimePeriod, fromTimestamp: TimeInterval? = nil) async throws -> [ChartCoinPriceResponse] {
@@ -242,7 +230,7 @@ extension HsProvider {
             parameters["from_timestamp"] = Int(fromTimestamp)
         }
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/price_chart", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/price_chart", method: .get, parameters: parameters, headers: headers)
     }
 
     // Holders
@@ -252,7 +240,7 @@ extension HsProvider {
             "blockchain_uid": blockchainUid,
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)/holders", method: .get, parameters: parameters, headers: proHeaders())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)/holders", method: .get, parameters: parameters, headers: proHeaders)
     }
 
     // Funds
@@ -262,7 +250,7 @@ extension HsProvider {
             "coin_uid": coinUid,
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/funds/investments", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/funds/investments", method: .get, parameters: parameters, headers: headers)
     }
 
     func coinTreasuries(coinUid: String, currencyCode: String) async throws -> [CoinTreasury] {
@@ -271,7 +259,7 @@ extension HsProvider {
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/funds/treasuries", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/funds/treasuries", method: .get, parameters: parameters, headers: headers)
     }
 
     func coinReports(coinUid: String) async throws -> [CoinReport] {
@@ -279,11 +267,11 @@ extension HsProvider {
             "coin_uid": coinUid,
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/reports", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/reports", method: .get, parameters: parameters, headers: headers)
     }
 
     func twitterUsername(coinUid: String) async throws -> String? {
-        let response: TwitterUsernameResponse = try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/twitter", method: .get, headers: headers())
+        let response: TwitterUsernameResponse = try await networkManager.fetch(url: "\(baseUrl)/v1/coins/\(coinUid)/twitter", method: .get, headers: headers)
         return response.username
     }
 
@@ -293,7 +281,7 @@ extension HsProvider {
             "currency": currencyCode,
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/global-markets", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/global-markets", method: .get, parameters: parameters, headers: headers)
     }
 
     // Top Pairs
@@ -303,7 +291,7 @@ extension HsProvider {
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/exchanges/top-pairs", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/exchanges/top-pairs", method: .get, parameters: parameters, headers: headers)
     }
 
     // Top Platforms
@@ -313,15 +301,15 @@ extension HsProvider {
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms", method: .get, parameters: parameters, headers: headers)
     }
 
-    func topPlatformCoinsList(blockchain: String, currencyCode: String, apiTag: String) async throws -> [MarketInfoRaw] {
+    func topPlatformCoinsList(blockchain: String, currencyCode: String) async throws -> [MarketInfoRaw] {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased(),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms/\(blockchain)/list", method: .get, parameters: parameters, headers: headers(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms/\(blockchain)/list", method: .get, parameters: parameters, headers: headers)
     }
 
     func topPlatformMarketCapChart(platform: String, currencyCode: String?, interval: HsPointTimePeriod, fromTimestamp: TimeInterval? = nil) async throws -> [CategoryMarketPoint] {
@@ -335,7 +323,7 @@ extension HsProvider {
             parameters["from_timestamp"] = Int(fromTimestamp)
         }
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms/\(platform)/market_chart", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/top-platforms/\(platform)/market_chart", method: .get, parameters: parameters, headers: headers)
     }
 
     // Pro Charts
@@ -346,7 +334,7 @@ extension HsProvider {
             "interval": timePeriod.rawValue,
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(path)", method: .get, parameters: parameters, headers: proHeaders())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(path)", method: .get, parameters: parameters, headers: proHeaders)
     }
 
     private func proData<T: ImmutableMappable>(path: String, timePeriod: HsTimePeriod) async throws -> [T] {
@@ -354,7 +342,7 @@ extension HsProvider {
             "interval": timePeriod.rawValue,
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(path)", method: .get, parameters: parameters, headers: proHeaders())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(path)", method: .get, parameters: parameters, headers: proHeaders)
     }
 
     private func rankData<T: ImmutableMappable>(type: String, currencyCode: String? = nil) async throws -> [T] {
@@ -366,18 +354,18 @@ extension HsProvider {
             parameters["currency"] = currencyCode.lowercased()
         }
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/ranks", method: .get, parameters: parameters, headers: proHeaders())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/ranks", method: .get, parameters: parameters, headers: proHeaders)
     }
 
-    func analytics(coinUid: String, currencyCode: String, apiTag: String) async throws -> Analytics {
+    func analytics(coinUid: String, currencyCode: String) async throws -> Analytics {
         let parameters: Parameters = [
             "currency": currencyCode.lowercased(),
         ]
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)", method: .get, parameters: parameters, headers: proHeaders(apiTag: apiTag))
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)", method: .get, parameters: parameters, headers: proHeaders)
     }
 
-    func analyticsPreview(coinUid: String, apiTag: String) async throws -> AnalyticsPreview {
-        try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)/preview", method: .get, headers: headers(apiTag: apiTag))
+    func analyticsPreview(coinUid: String) async throws -> AnalyticsPreview {
+        try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/\(coinUid)/preview", method: .get, headers: headers)
     }
 
     func dexVolumes(coinUid: String, currencyCode: String, timePeriod: HsTimePeriod) async throws -> [VolumePoint] {
@@ -435,7 +423,7 @@ extension HsProvider {
             "address": addresses.joined(separator: ","),
         ]
 
-        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/subscriptions", method: .get, parameters: parameters, headers: headers())
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/analytics/subscriptions", method: .get, parameters: parameters, headers: headers)
     }
 
     func authKey(address: String) async throws -> String {
@@ -443,7 +431,7 @@ extension HsProvider {
             "address": address,
         ]
 
-        let response: SignMessageResponse = try await networkManager.fetch(url: "\(baseUrl)/v1/auth/get-sign-message", method: .get, parameters: parameters, headers: headers())
+        let response: SignMessageResponse = try await networkManager.fetch(url: "\(baseUrl)/v1/auth/get-sign-message", method: .get, parameters: parameters, headers: headers)
 
         return response.message
     }
@@ -454,7 +442,7 @@ extension HsProvider {
             "address": address,
         ]
 
-        let response: AuthenticateResponse = try await networkManager.fetch(url: "\(baseUrl)/v1/auth/authenticate", method: .post, parameters: parameters, headers: headers())
+        let response: AuthenticateResponse = try await networkManager.fetch(url: "\(baseUrl)/v1/auth/authenticate", method: .post, parameters: parameters, headers: headers)
 
         return response.token
     }
@@ -466,13 +454,28 @@ extension HsProvider {
             "username": telegramUsername,
         ]
 
-        _ = try await networkManager.fetchJson(url: "\(baseUrl)/v1/support/start-chat", method: .post, parameters: parameters, headers: proHeaders())
+        _ = try await networkManager.fetchJson(url: "\(baseUrl)/v1/support/start-chat", method: .post, parameters: parameters, headers: proHeaders)
     }
 
     // Market Tickers
 
     func marketTickers(coinUid: String) async throws -> [MarketTicker] {
-        try await networkManager.fetch(url: "\(baseUrl)/v1/exchanges/tickers/\(coinUid)", method: .get, headers: headers())
+        try await networkManager.fetch(url: "\(baseUrl)/v1/exchanges/tickers/\(coinUid)", method: .get, headers: headers)
+    }
+
+    // Stats
+
+    func send(stats: Any, appVersion: String, appId: String?) async throws {
+        var headers = headers
+
+        headers.add(name: "app_platform", value: "ios")
+        headers.add(name: "app_version", value: appVersion)
+
+        if let appId {
+            headers.add(name: "app_id", value: appId)
+        }
+
+        _ = try await networkManager.fetchJson(url: "\(baseUrl)/v1/stats", method: .post, encoding: HttpBodyEncoding(jsonObject: stats), headers: headers)
     }
 }
 
@@ -528,6 +531,28 @@ extension HsProvider {
 
         init(map: Map) throws {
             token = try map.value("token")
+        }
+    }
+
+    private struct HttpBodyEncoding: ParameterEncoding {
+        private let jsonObject: Any
+
+        init(jsonObject: Any) {
+            self.jsonObject = jsonObject
+        }
+
+        func encode(_ urlRequest: URLRequestConvertible, with _: Parameters?) throws -> URLRequest {
+            var urlRequest = try urlRequest.asURLRequest()
+
+            let data = try JSONSerialization.data(withJSONObject: jsonObject)
+
+            if urlRequest.value(forHTTPHeaderField: "Content-Type") == nil {
+                urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            }
+
+            urlRequest.httpBody = data
+
+            return urlRequest
         }
     }
 }
