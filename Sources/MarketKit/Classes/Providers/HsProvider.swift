@@ -40,6 +40,14 @@ class HsProvider {
 }
 
 extension HsProvider {
+    func marketGlobal(currencyCode: String) async throws -> MarketGlobal {
+        let parameters: Parameters = [
+            "currency": currencyCode.lowercased(),
+        ]
+
+        return try await networkManager.fetch(url: "\(baseUrl)/v1/markets/overview-simple", method: .get, parameters: parameters, headers: headers)
+    }
+
     func marketOverview(currencyCode: String) async throws -> MarketOverviewResponse {
         let parameters: Parameters = [
             "simplified": true,
@@ -56,9 +64,7 @@ extension HsProvider {
 
         return try await networkManager.fetch(url: "\(baseUrl)/v1/coins/top-movers", method: .get, parameters: parameters, headers: headers)
     }
-}
 
-extension HsProvider {
     // Status
 
     func status() async throws -> HsStatus {
