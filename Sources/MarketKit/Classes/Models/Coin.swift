@@ -10,22 +10,24 @@ public class Coin: Record, Decodable, ImmutableMappable {
     public let marketCapRank: Int?
     public let coinGeckoId: String?
     public let priority: Int?
+    public let image: String?
 
     override open class var databaseTableName: String {
         "coin"
     }
 
     enum Columns: String, ColumnExpression {
-        case uid, name, code, marketCapRank, coinGeckoId, priority
+        case uid, name, code, marketCapRank, coinGeckoId, priority, image
     }
 
-    public init(uid: String, name: String, code: String, marketCapRank: Int? = nil, coinGeckoId: String? = nil, priority: Int? = 100) {
+    public init(uid: String, name: String, code: String, marketCapRank: Int? = nil, coinGeckoId: String? = nil, priority: Int? = 100, image: String? = nil) {
         self.uid = uid
         self.name = name
         self.code = code
         self.marketCapRank = marketCapRank
         self.coinGeckoId = coinGeckoId
         self.priority = priority
+        self.image = image
 
         super.init()
     }
@@ -38,6 +40,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         marketCapRank = try? map.value("market_cap_rank")
         coinGeckoId = try? map.value("coingecko_id")
         priority = try? map.value("priority")
+        image = try? map.value("image")
 
         super.init()
     }
@@ -49,6 +52,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         marketCapRank >>> map["market_cap_rank"]
         coinGeckoId >>> map["coingecko_id"]
         priority >>> map["priority"]
+        image >>> map["image"]
     }
 
     required init(row: Row) throws {
@@ -58,6 +62,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         marketCapRank = row[Columns.marketCapRank]
         coinGeckoId = row[Columns.coinGeckoId]
         priority = row[Columns.priority]
+        image = row[Columns.image]
 
         try super.init(row: row)
     }
@@ -69,6 +74,7 @@ public class Coin: Record, Decodable, ImmutableMappable {
         container[Columns.marketCapRank] = marketCapRank
         container[Columns.coinGeckoId] = coinGeckoId
         container[Columns.priority] = priority
+        container[Columns.image] = image
     }
 }
 
