@@ -90,7 +90,7 @@ extension HsProvider {
     func marketInfos(top: Int, currencyCode: String, defi: Bool) async throws -> [MarketInfoRaw] {
         var parameters: Parameters = [
             "limit": top,
-            "fields": "price,price_change_24h,market_cap,market_cap_rank,total_volume",
+            "fields": "price,price_change_24h,price_change_1d,market_cap,market_cap_rank,total_volume",
             "currency": currencyCode.lowercased(),
             "order_by_rank": "true",
         ]
@@ -105,7 +105,7 @@ extension HsProvider {
     func topCoinsMarketInfos(top: Int, currencyCode: String) async throws -> [MarketInfoRaw] {
         let parameters: Parameters = [
             "limit": top,
-            "fields": "price,price_change_24h,price_change_7d,price_change_30d,price_change_90d,market_cap,market_cap_rank,total_volume",
+            "fields": "price,price_change_24h,price_change_1d,price_change_7d,price_change_30d,price_change_90d,market_cap,market_cap_rank,total_volume",
             "currency": currencyCode.lowercased(),
             "order_by_rank": "true",
         ]
@@ -126,7 +126,7 @@ extension HsProvider {
     func marketInfos(coinUids: [String], currencyCode: String) async throws -> [MarketInfoRaw] {
         let parameters: Parameters = [
             "uids": coinUids.joined(separator: ","),
-            "fields": "price,price_change_24h,price_change_7d,price_change_30d,price_change_90d,market_cap,market_cap_rank,total_volume",
+            "fields": "price,price_change_24h,price_change_1d,price_change_7d,price_change_30d,price_change_90d,market_cap,market_cap_rank,total_volume",
             "currency": currencyCode.lowercased(),
         ]
 
@@ -209,7 +209,7 @@ extension HsProvider {
         var parameters: Parameters = [
             "uids": coinUids.joined(separator: ","),
             "currency": currencyCode.lowercased(),
-            "fields": "price,price_change_24h,last_updated",
+            "fields": "price,price_change_24h,price_change_1d,last_updated",
         ]
 
         if !walletCoinUids.isEmpty {
