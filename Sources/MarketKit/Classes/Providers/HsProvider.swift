@@ -68,7 +68,7 @@ extension HsProvider {
     // Status
 
     func status() async throws -> HsStatus {
-        try await networkManager.fetch(url: "\(baseUrl)/v1/status/updates", method: .get, headers: headers)
+        try await networkManager.fetch(url: "\(newBaseUrl)/s1/status/updates", method: .get, headers: headers)
     }
 
     // Coins
